@@ -20,7 +20,8 @@ type
   end;
   // HTTP
   function URLEncode(const ToEncode: string): string;
-  // Strings
+  function URLDecode(const ToDecode: string): string;
+    // Strings
   function  FPos(const aSubStr, aString : string; aStartPos: Integer = 1): Integer;
   function  RPos(const aSubStr, aString : string; aStartPos: Integer): Integer;
   function  OnceFastReplaceStr(var Str: string; const  SubStr: string; const RplStr : string; StartPos: integer; Backward: Boolean = False): Integer;
@@ -38,13 +39,22 @@ implementation
 uses
   System.Net.URLClient, psAPI, Windows;
 
-function URLEncode (const ToEncode: string): string;
+function URLEncode(const ToEncode: string): string;
 begin
   // Having issues with TNetEncoding.URL.Encode()   (space being + instead of %20...)
   {$WARNINGS OFF}
   Result := System.Net.URLClient.TURI.URLEncode(ToEncode);
   {$WARNINGS ON}
 end;
+
+function URLDecode(const ToDecode: string): string;
+begin
+  // Having issues with TNetEncoding.URL.Encode()   (space being + instead of %20...)
+  {$WARNINGS OFF}
+  Result := System.Net.URLClient.TURI.URLDecode(ToDecode);
+  {$WARNINGS ON}
+end;
+
 
 function IIF(Condition: Boolean; IsTrue: variant; IsFalse: variant): variant;
 begin

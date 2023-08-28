@@ -24,6 +24,7 @@ type
     jxoWarnOnMissingField,
     jxoRaiseException,
     jxoPropertiesOnly,
+    jxoGetRaw,
     // INTERNAL
     jxoReadLowMemory,
     jxoWriteLowMemory,
@@ -80,11 +81,11 @@ type
 
   TJsonXBaseExType = class(TJsonXBaseType)
   protected
-    procedure InternalClone(T : TJsonXBaseExType); virtual;
+     procedure InternalClone(T : TJsonXBaseExType); virtual;
   public
+     _RawJson : string;
     //class function NewInstance: TObject; override;
     //procedure FreeInstance; override;
-
     function GetPath(Path: string): TJsonXBaseExType;
     function Clone: TJsonXBaseExType; virtual;
   end;

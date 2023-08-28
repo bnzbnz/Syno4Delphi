@@ -282,8 +282,8 @@ begin
 end;
 
 class procedure TJsonX.ObjectParser(
-                    aObj: TObject; aJsonObj:
-                    JsonDataObjects.TJsonObject;
+                    aObj: TObject;
+                    aJsonObj: JsonDataObjects.TJsonObject;
                     SysParams: TJsonXSystemParameters;
                     SysStatus: TJsonXSystemStatus;
                     JsonXInternal: TJsonXInternal
@@ -374,11 +374,12 @@ begin
                 var isV3 := AttrType.ClassParent = TJsonXBaseEx3Type;
                 for var i := 0 to Arr.count - 1 do
                 begin
-                  var
-                  TypedObj := AttrType.Create;
+                  var TypedObj := AttrType.Create;
+                  if (jxoGetRaw in SysParams.Options) then
+                    TJsonXBaseExType(TypedObj)._RawJson := Arr.O[i].ToString;
                   if isV3 then TJsonXBaseEx3Type(TypedObj).InitCreate;
                   NewObj.Add(TypedObj);
-                  ObjectParser(TypedObj, Arr.O[i], SysParams, SysStatus,JsonXInternal);
+                  ObjectParser(TypedObj, Arr.O[i], SysParams, SysStatus, JsonXInternal);
                 end;
               end
               else if (jxoWarnOnMissingField in SysParams.Options) then
