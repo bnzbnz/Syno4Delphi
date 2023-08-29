@@ -187,22 +187,52 @@ begin
     end;
     for i := 0 to Count - 1 do
       Result := Result + R[i];
-
       Result := Trunc( Result / Count );
   finally
     Icmp.Free;
   end;
 end;
 
+{$IF CompilerVersion < 35.0} /// Compat 10.3 10.4
+type
+  Paddrinfo = ^addrinfo;
+  addrinfo = record
+    ai_flags: Integer;     // AI_PASSIVE, AI_CANONNAME, AI_NUMERICHOST
+    ai_family: Integer;    // PF_xxx
+    ai_socktype: Integer;  // SOCK_xxx
+    ai_protocol: Integer;  // 0 or IPPROTO_xxx for IPv4 and IPv6
+    ai_addrlen: SIZE_T;    // Length of ai_addr
+    ai_canonname: MarshaledAString; // Canonical name for nodename
+    ai_addr: PSockAddr;    // Binary address
+    ai_next: Paddrinfo;    // Next structure in linked list
+  end;
+
+  PaddrinfoW = ^addrinfoW;
+  addrinfoW = record
+    ai_flags: Integer;     // AI_PASSIVE, AI_CANONNAME, AI_NUMERICHOST
+    ai_family: Integer;    // PF_xxx
+    ai_socktype: Integer;  // SOCK_xxx
+    ai_protocol: Integer;  // 0 or IPPROTO_xxx for IPv4 and IPv6
+    ai_addrlen: SIZE_T;    // Length of ai_addr
+    ai_canonname: LPWSTR;  // Canonical name for nodename
+    ai_addr: PSockAddr;    // Binary address
+    ai_next: Paddrinfo;    // Next structure in linked list
+  end;
+  TAddrInfoW = addrinfoW;
+
+  function GetAddrInfoW(hostname, servname: LPCWSTR; const [Ref] hints: addrinfoW; out res: PaddrinfoW): Integer; stdcall; external 'ws2_32.dll' name 'GetAddrInfoW';
+  procedure FreeAddrInfoW(var ai: addrinfoW); stdcall; external 'ws2_32.dll' name 'FreeAddrInfoW';
+{$ENDIF}
+
 function HostToIP(const HostName: string; const IPv6: Boolean = False; const NotFound: string = ''): string;
 begin
   var WSAData: TWSAData;
   if WSAStartup(MAKEWORD(2, 2), WSAData) <> 0 Then Exit(NotFound);
+  var r: PaddrinfoW := nil;
   try
     var hints: TAddrInfoW;
     ZeroMemory(@hints, sizeof(TAddrInfoW));
     if (ipv6) then hints.ai_family:= AF_INET6 else hints.ai_family:= AF_INET;
-    var r: PaddrinfoW;
     if GetAddrInfoW(PWideChar(hostName), nil, hints, r) <> 0 then Exit(NotFound);
     var Length:DWORD := 64;
     var Buffer: TArray<byte>;
@@ -210,6 +240,7 @@ begin
     if (WSAAddressToString(r^.ai_addr^, r^.ai_addrlen, nil, @buffer[0], length) <> 0) then Exit(NotFound);
     exit(PWideChar(@Buffer[0]));
   finally
+    FreeAddrInfoW(r^);
     WSACleanup();
   end;
 end;
