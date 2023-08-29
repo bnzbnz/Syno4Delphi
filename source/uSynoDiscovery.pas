@@ -150,7 +150,6 @@ begin
         $C1:  Device.OS := string(Copy(Packet, P + 2, Len));
       else
         // Unknown Operation Code...
-        asm nop end;
       end;
       P := P + 2 + Len;
     end;
