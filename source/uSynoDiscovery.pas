@@ -1,10 +1,11 @@
 unit uSynoDiscovery;
 
-///
+/// Syno4Delphi : https://github.com/bnzbnz/Syno4Delphi
 /// Laurent Meyer : lmeyer@ea4d.com
 /// References:
 /// https://medium.com/@cq674350529/a-journey-into-synology-nas-part-2-analyzing-findhostd-service-2264e4fd21e9
 /// https://github.com/cq674350529/pocs_slides/blob/master/scripts/Synology/syno_finder/syno_finder.lua
+/// License: MPL 1.1 / GPL 2.1
 ///
 
 interface
@@ -34,7 +35,6 @@ type
     PortSSL: UInt32;
     Dns: string;
     Gateway: string;
-    TEST:UInt32;
   end;
 
   TSynoDiscovery = class;

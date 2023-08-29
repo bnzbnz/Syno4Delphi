@@ -1,7 +1,8 @@
 unit uNetUtils;
 
-///
-///  Laurent Meyer : lmeyer@ea4d.com
+/// Syno4Delphi : https://github.com/bnzbnz/Syno4Delphi
+/// Laurent Meyer : lmeyer@ea4d.com
+/// License: MPL 1.1 / GPL 2.1
 ///
 
 interface
