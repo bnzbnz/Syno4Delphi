@@ -4,7 +4,8 @@ uses
   Vcl.Forms,
   uDemo01 in 'uDemo01.pas' {FrmDemo01},
   uNetUtils in '..\..\source\uNetUtils.pas',
-  uSynoDiscovery in '..\..\source\uSynoDiscovery.pas';
+  uSynoDiscovery in '..\..\source\uSynoDiscovery.pas',
+  uSyno.Types in '..\..\source\uSyno.Types.pas';
 
 {$R *.res}
 

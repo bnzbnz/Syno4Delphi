@@ -22,7 +22,7 @@ object FrmDemo01: TFrmDemo01
     Caption = 'Scan (Select to Open)'
     TabOrder = 0
     OnClick = Button1Click
-    ExplicitWidth = 624
+    ExplicitWidth = 719
   end
   object LB: TListBox
     Left = 0
@@ -33,9 +33,7 @@ object FrmDemo01: TFrmDemo01
     ItemHeight = 15
     TabOrder = 1
     OnClick = LBClick
-    ExplicitLeft = 24
-    ExplicitTop = 104
-    ExplicitWidth = 432
+    ExplicitWidth = 719
     ExplicitHeight = 89
   end
 end

@@ -8,7 +8,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections,
-  uSynoDiscovery;
+  uSynoDiscovery, uSyno.Types;
 
 type
   TFrmDemo01 = class(TForm)
@@ -85,7 +85,7 @@ begin
                 [SynoDevice.Name, SynoDevice.Model, SynoDevice.IP,
                 SynoDevice.MAC, SynoDevice.Serial, SynoDevice.Port,
                 SynoDevice.PortSSL,
-                SynoDevice.OS, SynoDevice.VerMajor, SynoDevice.VerMinor, SynoDevice.VerUpdate]
+                SynoDevice.OS, SynoDevice.FirmMajor, SynoDevice.FirmMinor, SynoDevice.FirmUpdate]
               );
   LB.AddItem( Line, SynoDevice);
 end;

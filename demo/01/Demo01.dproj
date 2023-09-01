@@ -108,6 +108,7 @@
         </DCCReference>
         <DCCReference Include="..\..\source\uNetUtils.pas"/>
         <DCCReference Include="..\..\source\uSynoDiscovery.pas"/>
+        <DCCReference Include="..\..\source\uSyno.Types.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
