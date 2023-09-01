@@ -11,31 +11,10 @@ unit uSynoDiscovery;
 interface
 uses
    Classes, System.Generics.Collections,
-   IdGlobal, IdUDPServer, IdSocketHandle;
+   IdGlobal, IdUDPServer, IdSocketHandle,
+   uSyno.Types;
 
 type
-
-  TSynoDevice = class(TObject)
-    Packet: AnsiString;
-    PacketType: UInt32;
-    Name: string;
-    Model: string;
-    Description: string;
-    Serial: string;
-    OS: string;
-    VerMajor: string;
-    VerMinor: UInt32;
-    VerUpdate: UInt32;
-    IP: string;
-    FromIP: string;
-    FromMAC: string;
-    Subnet: string;
-    MAC: string;
-    Port: UInt32;
-    PortSSL: UInt32;
-    Dns: string;
-    Gateway: string;
-  end;
 
   TSynoDiscovery = class;
 
@@ -139,13 +118,14 @@ begin
                 Device.FromIP  := IpAddrToStr(Swap(PWord(@Packet[P+2])^) shl 16 + Swap(PWord(@Packet[P+4])^));
                 Device.FromMAC := IPtoMacAddr(Device.FromIP);
               end;
-        $49:  Device.VerMinor := PUInt32(@Packet[P+2])^;
+        $49:  Device.FirmMinor := PUInt32(@Packet[P+2])^;
         $70:  Device.Description := string(Copy(Packet, P + 2, Len));
         $75:  Device.Port := PUInt32(@Packet[P+2])^;
         $76:  Device.PortSSL := PUInt32(@Packet[P+2])^;
-        $77:  Device.VerMajor := string(Copy(Packet, P + 2, Len));
+        $77:  Device.FirmMajor := string(Copy(Packet, P + 2, Len));
         $78:  Device.Model := string(Copy(Packet, P + 2, Len));
-        $90:  Device.VerUpdate := PUInt32(@Packet[P+2])^;
+        $90:  Device.FirmUpdate := PUInt32(@Packet[P+2])^;
+        $A4:  Device.FirmDate := PUInt32(@Packet[P+2])^;
         $C0:  Device.Serial := string(Copy(Packet, P + 2, Len));
         $C1:  Device.OS := string(Copy(Packet, P + 2, Len));
       else

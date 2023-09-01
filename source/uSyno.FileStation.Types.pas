@@ -124,7 +124,8 @@ type
     // => FS_Info
     // (p21)
     {$REGION 'Info'}
-    TSynoFSInfoRequest = class(TSynoRequest)
+    TSynoFSInfoReq = class(TSynoRequest)
+      constructor Create; overload;
     end;
 
     TSynoFSInfoItem = class(TJsonXBaseEx2Type)
@@ -136,7 +137,7 @@ type
       Fenable_5Fremote_5Fmount: variant;
     end;
 
-    TSynoFSInfoData = class(TJsonXBaseEx2Type)
+    TSynoFSInfoResData = class(TJsonXBaseEx2Type)
       Fenable_5Flist_5Fusergrp: variant;
       Fenable_5Fsend_5Femail_5Fattachment: variant;
       Fenable_5Fview_5Fgoogle: variant;
@@ -154,8 +155,8 @@ type
       Fuid: variant;
     end;
 
-    TSynoFSInfoResponse = class(TSynoResponse)
-      Fdata: TSynoFSInfoData;
+    TSynoFSInfoRes = class(TSynoResponse)
+      Fdata: TSynoFSInfoResData;
     end;
     {$ENDREGION}
 
@@ -169,13 +170,14 @@ type
     // => FS_Shares
     // (p23)
     {$REGION 'List Share'}
-    TSynoFSListSharesRequest = class(TSynoRequest)
+    TSynoFSListSharesReq = class(TSynoRequest)
       Foffset: variant;
       Flimit: variant;
       Fsort_5Fby: variant;
       Fsort_5Fdirection: variant;
       Fonlywritable: variant;
       Fadditional: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSShareAdditional = class(TJsonXBaseEx2Type)
@@ -185,7 +187,7 @@ type
       Fperm: TSynoFS_Perm;
     end;
 
-    TSynoFSShares = class(TJsonXBaseEx2Type)
+    TSynoFSShare = class(TJsonXBaseEx2Type)
       Fisdir: variant;
       Fname: variant;
       Fpath: variant;
@@ -196,12 +198,12 @@ type
 
     TSynoFSSharesData = class(TJsonXBaseEx2Type)
       Foffset: variant;
-      [AJsonXClassType(TSynoFSShares)]
+      [AJsonXClassType(TSynoFSShare)]
       Fshares: TJsonXObjListType;
       Ftotal: variant;
     end;
 
-    TSynoFSListSharesResponse = class(TSynoResponse)
+    TSynoFSListSharesRes = class(TSynoResponse)
       Fdata: TSynoFSSharesData;
     end;
     {$ENDREGION}
@@ -212,7 +214,7 @@ type
     // (p29)
     {$REGION 'Enum Files'}
 
-    TSynoFSEnumRequest = class(TSynoRequest)
+    TSynoFSEnumReq = class(TSynoRequest)
       Ffolder_5Fpath: variant;
       Foffset: variant;
       Flimit: variant;
@@ -222,6 +224,7 @@ type
       Ffiletype: variant;
       Fgoto_5Fpath: variant;
       Fadditional: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSEnumChildren = class;
@@ -248,7 +251,7 @@ type
       Ffiles: TJsonXObjListType;
     end;
 
-    TSynoFSEnumResponse = class(TSynoResponse)
+    TSynoFSEnumRes = class(TSynoResponse)
       Fdata: TSynoFSEnumData;
     end;
 
@@ -261,9 +264,10 @@ type
     // (p35)
     {$REGION 'Files Info'}
 
-    TSynoFSFilesRequest = class(TSynoRequest)
+    TSynoFSFilesReq = class(TSynoRequest)
      Fpath: variant;
      Fadditional: variant;
+     constructor Create; overload;
     end;
 
     TSynoFSFilesData = class(TJsonXBaseEx2Type)
@@ -271,7 +275,7 @@ type
       Ffiles: TJsonXObjListType;
     end;
 
-    TSynoFSFilesResponse = class(TSynoResponse)
+    TSynoFSFilesRes = class(TSynoResponse)
      Fdata: TSynoFSFilesData;
     end;
 
@@ -294,7 +298,7 @@ type
     // (p39)
     {$REGION 'Search Start'}
 
-    TSynoFSStartSearchRequest = class(TSynoRequest)
+    TSynoFSStartSearchReq = class(TSynoRequest)
      Ffolder_5Fpath: variant;
      Frecursive: variant;
      Fpattern: variant;
@@ -310,6 +314,7 @@ type
      Fartime_5Fto: variant;
      Fowner: variant;
      Fgroup: variant;
+     constructor Create; overload;
     end;
 
     TSynoFSStartSearchData = class(TJsonXBaseEx2Type)
@@ -317,7 +322,7 @@ type
       Fhas_5Fnot_5Findex_5Fshare: variant;
     end;
 
-    TSynoFSStartSearchResponse = class(TSynoResponse)
+    TSynoFSStartSearchRes = class(TSynoResponse)
       Fdata: TSynoFSStartSearchData;
     end;
 
@@ -331,7 +336,7 @@ type
     // (p41)
     {$REGION 'Search List'}
 
-    TSynoFSListSearchRequest = class(TSynoRequest)
+    TSynoFSListSearchReq = class(TSynoRequest)
       Ftaskid: variant;
       Foffset: variant;
       Flimit: variant;
@@ -340,6 +345,7 @@ type
       Fpattern: variant;
       Ffiletype: variant;
       Fadditional: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSListSearchData = class(TJsonXBaseEx2Type)
@@ -349,7 +355,7 @@ type
       [AJsonXClassType(TSynoFSEnumFile)]
       Ffiles: TJsonXObjListType;
     end;
-    TSynoFSListSearchResponse = class(TSynoResponse)
+    TSynoFSListSearchRes = class(TSynoResponse)
       Fdata: TSynoFSListSearchData;
     end;
 
@@ -363,11 +369,12 @@ type
     // (p45)
     {$REGION 'Search Stop'}
 
-    TSynoFSStopSearchRequest = class(TSynoRequest)
+    TSynoFSStopSearchReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
-    TSynoFSStopSearchResponse = class(TSynoResponse)
+    TSynoFSStopSearchRes = class(TSynoResponse)
     end;
 
     {$ENDREGION}
@@ -378,15 +385,16 @@ type
     // (p45)
     {$REGION 'Search Clean'}
 
-    TSynoFSCleanSearchRequest = class(TSynoRequest)
+    TSynoFSCleanSearchReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSCleanSearchData = class(TJsonXBaseEx2Type)
 
     end;
 
-    TSynoFSCleanSearchResponse = class(TSynoResponse)
+    TSynoFSCleanSearchRes = class(TSynoResponse)
       Fdata: TSynoFSCleanSearchData;
     end;
 
@@ -409,6 +417,7 @@ type
       Fsort_5Fby: variant;
       Fsort_5Fdirection: variant;
       Fadditional: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSVirtualListData = class(TJsonXBaseEx2Type)
@@ -439,6 +448,7 @@ type
         Flimit: variant;
         Fstatus_5Ffilter: variant;
         Fadditional: variant;
+        constructor Create; overload;
       end;
 
     TSynoFS_favorite_additional = class(TJsonXBaseEx2Type)
@@ -480,6 +490,7 @@ type
       Fpath: variant;
       Fname: variant;
       Findex: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSFavAddRes = class(TSynoResponse);
@@ -494,6 +505,7 @@ type
 
     TSynoFSFavDeleteReq = class(TSynoRequest)
       Fpath: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSFavDeleteRes = class(TSynoResponse);
@@ -508,6 +520,7 @@ type
 
     TSynoFSFavCleanReq = class(TSynoRequest)
       Fpath: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSFavCleanRes = class(TSynoResponse);
@@ -523,6 +536,7 @@ type
     TSynoFSFavEditReq = class(TSynoRequest)
       Fpath: variant;
       Fname: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSFavEditRes = class(TSynoResponse);
@@ -538,6 +552,7 @@ type
     TSynoFSFavAllReq = class(TSynoRequest)
       Fpath: variant;
       Fname: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSFavAllRes = class(TSynoResponse);
@@ -568,6 +583,7 @@ type
       Fpath: variant;
       Fsize: variant;
       Frotate: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSThumbRes = class(TSynoResponse);
@@ -588,6 +604,7 @@ type
 
     TSynoFSSizeStartReq = class(TSynoRequest)
       Fpath: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSSizeStartData = class(TSynoResponse)
@@ -608,6 +625,7 @@ type
 
     TSynoFSSizeStatusReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSSizeStatusData = class(TJsonXBaseEx2Type)
@@ -631,6 +649,7 @@ type
 
     TSynoFSSizeStopReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSSizeStopRes = class(TSynoResponse)
@@ -651,6 +670,7 @@ type
 
     TSynoFSMD5StartReq = class(TSynoRequest)
       Ffile_path: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSMD5StartData = class(TSynoResponse)
@@ -671,6 +691,7 @@ type
 
     TSynoFSMD5StatusReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSMD5StatusData = class(TJsonXBaseEx2Type)
@@ -692,6 +713,7 @@ type
 
     TSynoFSMD5StopReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSMD5StopRes = class(TSynoResponse)
@@ -714,6 +736,7 @@ type
       Ffilename: variant;
       Foverwrite: variant;
       Fcreate_only: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSPermWriteRes = class(TSynoResponse)
@@ -739,6 +762,7 @@ type
       Fmtime: variant;
       Fsize: variant;
       Fcreate_parents: variant;
+      constructor Create; overload;
      end;
 
     TSynoFSUploadFileData = class(TJsonXBaseEx2Type)
@@ -771,7 +795,9 @@ type
      end;
     *)
 
-    TSynoFSDownloadFilesRes = class(TSynoResponse);
+    TSynoFSDownloadFilesRes = class(TSynoResponse)
+      constructor Create; overload;
+    end;
 
     {$ENDREGION}
 
@@ -786,6 +812,7 @@ type
 
     TSynoFSShareInfoReq = class(TSynoRequest)
       Fid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSShareInfoRes = class(TSynoResponse)
@@ -805,6 +832,7 @@ type
       Fsort_by: variant;
       Fsort_direction: variant;
       Fforce_clean: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSShareListData = class(TSynoResponse)
@@ -830,6 +858,7 @@ type
       Fpassword: variant;
       Fdate_expired: variant;
       Fdate_available: variant;
+      constructor Create; overload;
      end;
 
     TSynoFS_shared_link_app = class(TJsonXBaseEx2Type)
@@ -881,6 +910,7 @@ type
 
     TSynoFSShareDeleteReq = class(TSynoRequest)
       Fid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSShareDeleteRes = class(TSynoResponse);
@@ -892,7 +922,10 @@ type
     // (p77)
     {$REGION 'Share Clear'}
 
-    TSynoFSShareClearReq = class(TSynoRequest);
+    TSynoFSShareClearReq = class(TSynoRequest)
+      constructor Create; overload;
+    end;
+
     TSynoFSShareClearRes = class(TSynoResponse);
 
     {$ENDREGION}
@@ -900,13 +933,14 @@ type
     // edit
     // Edit sharing link(s).
     // (p78)
-    {$REGION 'Share Clear'}
+    {$REGION 'Share Edit'}
 
     TSynoFSShareEditReq = class(TSynoRequest)
       Fid: variant;
       Fpassword: variant;
       Fdate_expired: variant;
       Fdate_available: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSShareEditRes = class(TSynoResponse);
@@ -927,6 +961,7 @@ type
       Fname: variant;
       Fforce_parent: variant;
       Fadditional: variant;
+      constructor Create; overload;
     end;
 
      TSynoFSFolderCreateData = class(TJsonXBaseEx2Type)
@@ -954,6 +989,7 @@ type
       Fname: variant;
       Fadditional: variant;
       Fsearch_taskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSRenameData = class(TJsonXBaseEx2Type)
@@ -987,6 +1023,7 @@ type
       Fremove_src: variant;
       Faccurate_progress: variant;
       Fsearch_taskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSCopyMoveStartData = class(TJsonXBaseEx2Type)
@@ -1006,6 +1043,7 @@ type
 
     TSynoFSCopyMoveStatusReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSCopyMoveStatusData = class(TJsonXBaseEx2Type)
@@ -1030,6 +1068,7 @@ type
 
     TSynoFSCopyMoveStopReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSCopyMoveStopRes = class(TSynoResponse);
@@ -1053,6 +1092,7 @@ type
       Faccurate_progress: variant;
       Frecursive: variant;
       Fsearch_taskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSDeleteStartData = class(TJsonXBaseEx2Type)
@@ -1072,6 +1112,7 @@ type
 
     TSynoFSDeleteStatusReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSDeleteStatusData = class(TJsonXBaseEx2Type)
@@ -1096,6 +1137,7 @@ type
 
     TSynoFSDeleteStopReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSDeleteStopRes = class(TSynoResponse);
@@ -1111,6 +1153,7 @@ type
       Fpath: variant;
       Frecursive: variant;
       Fsearch_taskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSDeleteRes = class(TSynoResponse);
@@ -1138,6 +1181,7 @@ type
       Fcodepage: variant;
       Fpassword: variant;
       Fitem_id: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSExtractStartData = class(TJsonXBaseEx2Type)
@@ -1157,6 +1201,7 @@ type
 
     TSynoFSExtractStatusReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSExtractStatusData = class(TJsonXBaseEx2Type)
@@ -1178,6 +1223,7 @@ type
 
     TSynoFSExtractStopReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSExtractStopRes = class(TSynoResponse);
@@ -1198,6 +1244,7 @@ type
       Fcodepage: variant;
       Fpassword: variant;
       Fitem_id: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSExtractListData = class(TJsonXBaseEx2Type)
@@ -1210,10 +1257,6 @@ type
     end;
 
     {$ENDREGION}
-
-    // list
-    // List archived files contained in an archive.
-    // (p98)
 
 //==>> SYNO.FileStation.Compress
 //==>> This is a non-blocking API. You need to start to compress files with the
@@ -1234,6 +1277,7 @@ type
       Fmode: variant;
       Fformat: variant;
       Fpassword: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSCompressStartData = class(TJsonXBaseEx2Type)
@@ -1253,6 +1297,7 @@ type
 
     TSynoFSCompressStatusReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSCompressStatusData = class(TJsonXBaseEx2Type)
@@ -1273,6 +1318,7 @@ type
 
     TSynoFSCompressStopReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSCompressStopRes = class(TSynoResponse);
@@ -1300,6 +1346,7 @@ type
       Fsort_by: variant;
       Fsort_direction: variant;
       Fapi_filter: variant;
+      constructor Create; overload;
     end;
 
     TSynoFS_start_task_params = class(TJsonXBaseEx2Type)
@@ -1361,6 +1408,7 @@ type
 
     TSynoFSBackTaskClearReq = class(TSynoRequest)
       Ftaskid: variant;
+      constructor Create; overload;
     end;
 
     TSynoFSBackTaskClearRes = class(TSynoResponse);
@@ -1368,7 +1416,490 @@ type
     {$ENDREGION}
 
 
-  implementation
+implementation
 
+
+{ TSynoFSInfoReq }
+constructor TSynoFSInfoReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Info';
+  Fmethod := 'get';
+  Fversion := 2;
+end;
+
+{ TSynoFSListSharesReq }
+
+constructor TSynoFSListSharesReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.List';
+  Fmethod := 'list_share';
+  Fversion := 1;
+end;
+
+{ TSynoFSEnumReq }
+
+constructor TSynoFSEnumReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.List';
+  Fmethod := 'list';
+  Fversion := 2;
+end;
+
+{ TSynoFSFilesReq }
+
+constructor TSynoFSFilesReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.List';
+  Fmethod := 'getinfo';
+  Fversion := 2;
+end;
+
+{ TSynoFSStartSearchReq }
+
+constructor TSynoFSStartSearchReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Search';
+  Fmethod := 'start';
+  Fversion := 2;
+end;
+
+{ TSynoFSListSearchReq }
+
+constructor TSynoFSListSearchReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Search';
+  Fmethod := 'list';
+  Fversion := 2;
+end;
+
+{ TSynoFSStopSearchReq }
+
+constructor TSynoFSStopSearchReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Search';
+  Fmethod := 'stop';
+  Fversion := 2;
+end;
+
+{ TSynoFSCleanSearchReq }
+
+constructor TSynoFSCleanSearchReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Search';
+  Fmethod := 'clean';
+  Fversion := 2;
+end;
+
+{ TSynoFSVirtualListReq }
+
+constructor TSynoFSVirtualListReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.VirtualFolder';
+  Fmethod := 'list';
+  Fversion := 2;
+end;
+
+{ TSynoFSFavListReq }
+
+constructor TSynoFSFavListReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Favorite';
+  Fmethod := 'list';
+  Fversion := 1;
+end;
+
+{ TSynoFSFavAddReq }
+
+constructor TSynoFSFavAddReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Favorite';
+  Fmethod := 'add';
+  Fversion := 2;
+end;
+
+{ TSynoFSFavDeleteReq }
+
+constructor TSynoFSFavDeleteReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Favorite';
+  Fmethod := 'delete';
+  Fversion := 2;
+end;
+
+{ TSynoFSFavCleanReq }
+
+constructor TSynoFSFavCleanReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Favorite';
+  Fmethod := 'clear_broken';
+  Fversion := 2;
+end;
+
+{ TSynoFSFavEditReq }
+
+constructor TSynoFSFavEditReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Favorite';
+  Fmethod := 'edit';
+  Fversion := 2;
+end;
+
+{ TSynoFSFavAllReq }
+
+constructor TSynoFSFavAllReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Favorite';
+  Fmethod := 'replace_all';
+  Fversion := 2;
+end;
+
+{ TSynoFSThumbReq }
+
+constructor TSynoFSThumbReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Thumb';
+  Fmethod := 'get';
+  Fversion := 2;
+end;
+
+{ TSynoFSSizeStartReq }
+
+constructor TSynoFSSizeStartReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.DirSize';
+  Fmethod := 'start';
+  Fversion := 2;
+end;
+
+{ TSynoFSSizeStatusReq }
+
+constructor TSynoFSSizeStatusReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.DirSize';
+  Fmethod := 'status';
+  Fversion := 2;
+end;
+
+{ TSynoFSSizeStopReq }
+
+constructor TSynoFSSizeStopReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.DirSize';
+  Fmethod := 'stop';
+  Fversion := 2;
+end;
+
+{ TSynoFSMD5StartReq }
+
+constructor TSynoFSMD5StartReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.MD5';
+  Fmethod := 'start';
+  Fversion := 2;
+end;
+
+{ TSynoFSMD5StatusReq }
+
+constructor TSynoFSMD5StatusReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.MD5';
+  Fmethod := 'status';
+  Fversion := 1;
+end;
+
+{ TSynoFSMD5StopReq }
+
+constructor TSynoFSMD5StopReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.MD5';
+  Fmethod := 'stop';
+  Fversion := 2;
+end;
+
+{ TSynoFSPermWriteReq }
+
+constructor TSynoFSPermWriteReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.CheckPermission';
+  Fmethod := 'write';
+  Fversion := 3;
+end;
+
+{ TSynoFSUploadFileReq }
+
+constructor TSynoFSUploadFileReq.Create;
+begin
+  Inherited;
+end;
+
+{ TSynoFSDownloadFilesRes }
+
+constructor TSynoFSDownloadFilesRes.Create;
+begin
+  Inherited;
+end;
+
+{ TSynoFSShareInfoReq }
+
+constructor TSynoFSShareInfoReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Sharing';
+  Fmethod := 'getinfo';
+  Fversion := 3;
+end;
+
+{ TSynoFSShareListReq }
+
+constructor TSynoFSShareListReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Sharing';
+  Fmethod := 'list';
+  Fversion := 3;
+end;
+
+{ TSynoFSShareCreateReq }
+
+constructor TSynoFSShareCreateReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Sharing';
+  Fmethod := 'create';
+  Fversion := 3;
+end;
+
+{ TSynoFSShareDeleteReq }
+
+constructor TSynoFSShareDeleteReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Sharing';
+  Fmethod := 'delete';
+  Fversion := 3;
+end;
+
+{ TSynoFSShareClearReq }
+
+constructor TSynoFSShareClearReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Sharing';
+  Fmethod := 'clear_invalid';
+  Fversion := 3;
+end;
+
+{ TSynoFSShareEditReq }
+
+constructor TSynoFSShareEditReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Sharing';
+  Fmethod := 'edit';
+  Fversion := 3;
+end;
+
+{ TSynoFSFolderCreateReq }
+
+constructor TSynoFSFolderCreateReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.CreateFolder';
+  Fmethod := 'create';
+  Fversion := 2;
+end;
+
+{ TSynoFSRenameReq }
+
+constructor TSynoFSRenameReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Rename';
+  Fmethod := 'rename';
+  Fversion := 2;
+end;
+
+{ TSynoFSCopyMoveStartReq }
+
+constructor TSynoFSCopyMoveStartReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.CopyMove';
+  Fmethod := 'start';
+  Fversion := 3;
+end;
+
+{ TSynoFSCopyMoveStatusReq }
+
+constructor TSynoFSCopyMoveStatusReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.CopyMove';
+  Fmethod := 'status';
+  Fversion := 3;
+end;
+
+{ TSynoFSCopyMoveStopReq }
+
+constructor TSynoFSCopyMoveStopReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.CopyMove';
+  Fmethod := 'stop';
+  Fversion := 3;
+end;
+
+{ TSynoFSDeleteStartReq }
+
+constructor TSynoFSDeleteStartReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Delete';
+  Fmethod := 'start';
+  Fversion := 2;
+end;
+
+{ TSynoFSDeleteStatusReq }
+
+constructor TSynoFSDeleteStatusReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Delete';
+  Fmethod := 'status';
+  Fversion := 2;
+end;
+
+{ TSynoFSDeleteStopReq }
+
+constructor TSynoFSDeleteStopReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Delete';
+  Fmethod := 'stop';
+  Fversion := 2;
+end;
+
+{ TSynoFSDeleteReq }
+
+constructor TSynoFSDeleteReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Delete';
+  Fmethod := 'delete';
+  Fversion := 2;
+end;
+
+{ TSynoFSExtractStartReq }
+
+constructor TSynoFSExtractStartReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Extract';
+  Fmethod := 'start';
+  Fversion := 2;
+end;
+
+{ TSynoFSExtractStatusReq }
+
+constructor TSynoFSExtractStatusReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Extract';
+  Fmethod := 'status';
+  Fversion := 2;
+end;
+
+{ TSynoFSExtractStopReq }
+
+constructor TSynoFSExtractStopReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Extract';
+  Fmethod := 'stop';
+  Fversion := 2;
+end;
+
+{ TSynoFSExtractListReq }
+
+constructor TSynoFSExtractListReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Extract';
+  Fmethod := 'list';
+  Fversion := 2;
+end;
+
+{ TSynoFSCompressStartReq }
+
+constructor TSynoFSCompressStartReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Compress';
+  Fmethod := 'start';
+  Fversion := 3;
+end;
+
+{ TSynoFSCompressStatusReq }
+
+constructor TSynoFSCompressStatusReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Compress';
+  Fmethod := 'status';
+  Fversion := 3;
+end;
+
+{ TSynoFSCompressStopReq }
+
+constructor TSynoFSCompressStopReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.Compress';
+  Fmethod := 'stop';
+  Fversion := 3;
+end;
+
+{ TSynoFSBackTaskListReq }
+
+constructor TSynoFSBackTaskListReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.BackgroundTask';
+  Fmethod := 'list';
+  Fversion := 3;
+end;
+
+{ TSynoFSBackTaskClearReq }
+
+constructor TSynoFSBackTaskClearReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.FileStation.BackgroundTask';
+  Fmethod := 'clear_finished';
+  Fversion := 3;
+end;
 
 end.

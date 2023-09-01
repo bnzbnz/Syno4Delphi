@@ -17,7 +17,7 @@ type
     Fmethod: variant;
     Fversion: variant;
     function QueryString(URLEnc: Boolean = True): string;
-    constructor Create(Api, Method, Version: variant); overload;
+    constructor Create(Api, Method: string; Version: Integer); overload;
   end;
 
   TSynoErrorList = class(TJsonXBaseEx2Type)
@@ -41,12 +41,35 @@ type
     constructor Create(FromJSON: string); overload;
   end;
 
+  TSynoDevice = class(TObject)
+    Packet: AnsiString;
+    PacketType: UInt32;
+    Name: string;
+    Model: string;
+    Description: string;
+    Serial: string;
+    OS: string;
+    FirmMajor: string;
+    FirmMinor: UInt32;
+    FirmUpdate: UInt32;
+    FirmDate: UInt32;
+    IP: string;
+    FromIP: string;
+    FromMAC: string;
+    Subnet: string;
+    MAC: string;
+    Port: UInt32;
+    PortSSL: UInt32;
+    Dns: string;
+    Gateway: string;
+  end;
+
 implementation
 uses Variants, Sysutils, RTTI, uJsonX.RTTI, uJsonX.Utils;
 
 { TSynoRequest }
 
-constructor TSynoRequest.Create(Api, Method, Version: variant);
+constructor TSynoRequest.Create(Api, Method : string; Version: Integer);
 begin
   Inherited Create;
   Fapi := Api;

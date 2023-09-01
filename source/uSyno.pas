@@ -11,16 +11,13 @@ uses
   System.Net.HttpClientComponent, System.Net.HttpClient,
   uJsonX, uJsonX.Types,
   uJsonX.Utils,
-  uSyno.Auth.Types,
   uSyno.Core.Types,
-  uSyno.Utils,
   uSyno.Types,
   uSyno.API.Types,
   uSyno.FileStation.Types;
 
 type
-
-  TSyno = class(TObject)
+  TSyno = class(TPersistent)
   private
     FHttpHost: string;
     FUsername: string;
@@ -32,6 +29,7 @@ type
     FLastReq: string;
     FLastRes: string;
     FLastErr: Integer;
+    FDevice: TSynoDevice;
   protected
     function HTTPGet<Res: class, constructor>(Req: TSynoRequest): Res; overload;
     function HTTPGet<Res: class, constructor>(API, Method: string; Version: Integer; Req: TSynoRequest): Res; overload;
@@ -44,6 +42,7 @@ type
     property LastRequest: string read FLastReq;
     property LastResponse: string read FLastRes;
     property LastError: Integer read FLastErr;
+    property Device: TSynoDevice read FDevice write FDevice;
   public
     constructor Create(HttpHost, Username, Password : string); overload;
     destructor Destroy; override;
@@ -55,13 +54,18 @@ type
     {$REGION  'Auth Impl.'}
       // https://global.synologydownload.com/download/Document/Software/DeveloperGuide/Os/DSM/All/enu/DSM_Login_Web_API_Guide_enu.pdf
 
-      function Auth_APIList(Req: TSynoAuthAPIListReq): TSynoAuthAPIListRes; // (p13)
-      function Auth_Login: Boolean; // (p15)
-      function Auth_Logout: Boolean; // (p17)
-      function Auth_Token(Req: TSynoAuthTokenReq): TSynoAuthTokenRes; // (p17)
+      function Auth_APIQuery(Req: TSynoAuthAPIQueryReq): TSynoAuthAPIQueryRes; // (p13)
+      function Auth_Login(Req: TSynoAuthLoginReq): TSynoAuthLoginRes; overload; // (p15)
+      function Auth_Login: Boolean; overload;
+      function Auth_Logout(Req: TSynoAuthLogoutReq): TSynoAuthLogoutRes; overload; // (p17)
+      function Auth_Logout: Boolean; overload;
+      function Auth_Token(Req: TSynoAuthTokenReq): TSynoAuthTokenRes; overload; // (p17)
+      function Auth_Token: TSynoAuthTokenRes; overload;
+
     {$ENDREGION}
 
     {$REGION  'Core Impl.'}
+      //Reverse engineering
       function Core_Restart: boolean; // undocumented
       function Core_Shutdown: boolean; // undocumented
       function Core_FanSpeed: TSynoCoreFanSpeedRes;
@@ -75,35 +79,35 @@ type
       //https://global.synologydownload.com/download/Document/Software/DeveloperGuide/Package/FileStation/All/enu/Synology_File_Station_API_Guide.pdf
 
       // Provide File Station information. (p21)
-      function FS_Info(Req: TSynoFSInfoRequest): TSynoFSInfoResponse; overload;
-      function FS_Info: TSynoFSInfoResponse; overload;
+      function FS_Info(Req: TSynoFSInfoReq): TSynoFSInfoRes; overload;
+      function FS_Info: TSynoFSInfoRes; overload;
 
       // List all shared folders, enumerate files in a shared folder, and get
       // detailed file information. (p23)
-      function FS_Shares(Req: TSynoFSListSharesRequest): TSynoFSListSharesResponse;
+      function FS_Shares(Req: TSynoFSListSharesReq): TSynoFSListSharesRes;
 
       // Enumerate files in a given folder. (p29)
-      function FS_Enum(Req: TSynoFSEnumRequest): TSynoFSEnumResponse;
+      function FS_Enum(Req: TSynoFSEnumReq): TSynoFSEnumRes;
 
       // Get information of file(s). (p35)
-      function FS_Files(Req: TSynoFSFilesRequest): TSynoFSFilesResponse;
+      function FS_Files(Req: TSynoFSFilesReq): TSynoFSFilesRes;
 
       // Start to search files according to given criteria. If more than one criterion
       // is given in different parameters, searched files match all these criteria. (p39)
-      function FS_SearchStart(Req: TSynoFSStartSearchRequest): TSynoFSStartSearchResponse;
+      function FS_SearchStart(Req: TSynoFSStartSearchReq): TSynoFSStartSearchRes;
 
       // List matched files in a search temporary database. You can check the
       // finished value in response to know if the search operation is processing
       // or has been finished. (p41)
-      function FS_SearchList(Req: TSynoFSListSearchRequest): TSynoFSListSearchResponse;
+      function FS_SearchList(Req: TSynoFSListSearchReq): TSynoFSListSearchRes;
 
       // Stop the searching task(s). The search temporary database won't be
       // deleted, so it's possible to list the search result using list method
       // after stopping it. (p45)
-      function FS_SearchStop(Req: TSynoFSStopSearchRequest): TSynoFSStopSearchResponse;
+      function FS_SearchStop(Req: TSynoFSStopSearchReq): TSynoFSStopSearchRes;
 
       // Delete search temporary database(s). (p45);
-      function FS_SearchClean(Req: TSynoFSCleanSearchRequest): TSynoFSCleanSearchResponse;
+      function FS_SearchClean(Req: TSynoFSCleanSearchReq): TSynoFSCleanSearchRes;
 
       // List all mount point folders of virtual file system, e.g., CIFS or ISO. (p47)
       function FS_VirtualList(Req: TSynoFSVirtualListReq): TSynoFSVirtualListRes;
@@ -232,7 +236,8 @@ type
   end;
 
 implementation
-uses  dialogs, variants, System.Generics.Collections;
+uses  dialogs, variants, System.Generics.Collections, System.Net.URLClient,
+      System.NetConsts;
 
 {$REGION 'TSyno' }
 
@@ -404,12 +409,14 @@ end;
 
 {$REGION 'Auth'}
 
-function TSyno.Auth_APIList(Req: TSynoAuthAPIListReq): TSynoAuthAPIListRes;
+function TSyno.Auth_APIQuery(Req: TSynoAuthAPIQueryReq): TSynoAuthAPIQueryRes;
 begin
-  Req.Fapi := 'SYNO.API.Info';
-  Req.Fmethod := 'query';
-  Req.Fversion := 1;
-  Result := HTTPGet<TSynoAuthAPIListRes>(Req);
+  Result := HTTPGet<TSynoAuthAPIQueryRes>(Req);
+end;
+
+function TSyno.Auth_Login(Req: TSynoAuthLoginReq): TSynoAuthLoginRes;
+begin
+  Result := HTTPGet<TSynoAuthLoginRes>(Req);
 end;
 
 function TSyno.Auth_Login: Boolean;
@@ -418,14 +425,11 @@ begin
   var Req := TSynoAuthLoginReq.Create;
   var Res: TSynoAuthLoginRes := nil;
   try
-    Req.FAPI := 'SYNO.API.Auth';
-    Req.Fmethod := 'login';
-    Req.Fversion := 3;
     Req.Faccount := FUsername;
     Req.Fpasswd :=  FPassword;
     Req.Fformat := 'sid';
     Req.Fsession := StringGUID;
-    Res :=  HTTPGet<TSynoAuthLoginRes>(Req);
+    Res := Auth_Login(Req);
     if (Res = nil) then Exit;
     if (Res.Fdata = nil) then Exit;
     FSid := Res.Fdata.Fsid;
@@ -437,16 +441,18 @@ begin
   end;
 end;
 
+function TSyno.Auth_Logout(Req: TSynoAuthLogoutReq): TSynoAuthLogoutRes;
+begin
+  Result := HTTPGet<TSynoAuthLogoutRes>(Req);
+end;
+
 function TSyno.Auth_Logout: Boolean;
 begin
   Result := False;
   var Req := TSynoAuthLogoutReq.Create;
   var Res: TSynoAuthLogoutRes := nil;
   try
-    Req.FAPI := 'SYNO.API.Auth';
-    Req.Fmethod := 'logout';
-    Req.Fversion := 7;
-    Res :=  HTTPGet<TSynoAuthLogoutRes>(Req);
+    Res :=  Auth_Logout(Req);
     if Res = nil then Exit;
     Result := Res.Fsuccess;
   finally
@@ -458,11 +464,20 @@ end;
 
 function TSyno.Auth_Token(Req: TSynoAuthTokenReq): TSynoAuthTokenRes;
 begin
-  Req.Fapi := 'SYNO.API.Auth';
-  Req.Fmethod := 'token';
-  Req.Fversion := 6;
   Result := HTTPGet<TSynoAuthTokenRes>(Req);
 end;
+
+function TSyno.Auth_Token: TSynoAuthTokenRes;
+begin
+  Result := nil;
+  var Req :=  TSynoAuthTokenReq.Create;
+  try
+    Result := HTTPGet<TSynoAuthTokenRes>(Req);
+  finally
+    Req.Free;
+  end;
+end;
+
 
 {$ENDREGION}
 
@@ -474,9 +489,6 @@ begin
   var Req := TSynoCoreRestartReq.Create;
   var Res: TSynoCoreRestartRes := nil;
   try
-    Req.Fapi := 'SYNO.Core.System';
-    Req.Fmethod := 'reboot';
-    Req.Fversion := 2;
     Req.Fforce := False;
     Req.Flocal := True;
     Req.Ffirmware_5Fupgrade := False;
@@ -496,9 +508,6 @@ begin
   var Req := TSynoCoreShutdownReq.Create;
   var Res: TSynoCoreShutdownRes := nil;
   try
-    Req.Fapi := 'SYNO.Core.System';
-    Req.Fmethod := 'shutdown';
-    Req.Fversion := 2;
     Res := HTTPGet<TSynoCoreShutdownRes>(Req);
     if Res = nil then Exit;
     Result := Res.Fsuccess;
@@ -513,9 +522,6 @@ begin
   Result := nil;
   var Req :=  TSynoCoreFanSpeedReq.Create;
   try
-    Req.Fapi := 'SYNO.Core.Hardware.FanSpeed';
-    Req.Fmethod := 'get';
-    Req.Fversion := 1;
     Result := HTTPGet<TSynoCoreFanSpeedRes>(Req);
   finally
     Req.Free;
@@ -527,9 +533,6 @@ begin
   Result := nil;
   var Req :=  TSynoCore_SystemInfoReq.Create;
   try
-    Req.Fapi := 'SYNO.Core.System';
-    Req.Fmethod := 'info';
-    Req.Fversion := 3;
     Result := HTTPGet<TSynoCore_SystemInfoRes>(Req);
   finally
     Req.Free;
@@ -538,15 +541,7 @@ end;
 
 function TSyno.Core_Storage_Volume_List(Req: TCore_Storage_Volume_List_Req): TCore_Storage_Volume_List_Res;
 begin
-  Result := nil;
-  try
-    Req.Fapi := 'SYNO.Core.Storage.Volume';
-    Req.Fmethod := 'list';
-    Req.Fversion := 1;
-    Result := HTTPGet<TCore_Storage_Volume_List_Res>(Req);
-  finally
-    Req.Free;
-  end;
+  Result := HTTPGet<TCore_Storage_Volume_List_Res>(Req);
 end;
 
 function TSyno.Core_Storage_Volume_List: TCore_Storage_Volume_List_Res;
@@ -570,17 +565,14 @@ end;
 {$REGION 'FileStation'}
 
 // Provide File Station information. (p21)
-function TSyno.FS_Info(Req: TSynoFSInfoRequest): TSynoFSInfoResponse;
+function TSyno.FS_Info(Req: TSynoFSInfoReq): TSynoFSInfoRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Info';
-  Req.Fmethod := 'get';
-  Req.Fversion := 2;
-  Result := HTTPGet<TSynoFSInfoResponse>(Req);
+  Result := HTTPGet<TSynoFSInfoRes>(Req);
 end;
 
-function TSyno.FS_Info: TSynoFSInfoResponse;
+function TSyno.FS_Info: TSynoFSInfoRes;
 begin
-  var Req := TSynoFSInfoRequest.Create;
+  var Req := TSynoFSInfoReq.Create;
   try
     Result := FS_Info(Req);
   finally
@@ -591,205 +583,139 @@ end;
 
 // List all shared folders, enumerate files in a shared folder, and get
 // detailed file information. (p23)
-function TSyno.FS_Shares(Req: TSynoFSListSharesRequest): TSynoFSListSharesResponse;
+function TSyno.FS_Shares(Req: TSynoFSListSharesReq): TSynoFSListSharesRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.List';
-  Req.Fmethod := 'list_share';
-  Req.Fversion := 1;
-  Result := HTTPGet<TSynoFSListSharesResponse>(Req);
+  Result := HTTPGet<TSynoFSListSharesRes>(Req);
 end;
 
 // Enumerate files in a given folder. (p29)
-function TSyno.FS_Enum(Req: TSynoFSEnumRequest): TSynoFSEnumResponse;
+function TSyno.FS_Enum(Req: TSynoFSEnumReq): TSynoFSEnumRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.List';
-  Req.Fmethod := 'list';
-  Req.Fversion := 2;
-  Result := HTTPGet<TSynoFSEnumResponse>(Req);
+  Result := HTTPGet<TSynoFSEnumRes>(Req);
 end;
 
 // Get information of file(s). (p35)
-function TSyno.FS_Files(Req: TSynoFSFilesRequest): TSynoFSFilesResponse;
+function TSyno.FS_Files(Req: TSynoFSFilesReq): TSynoFSFilesRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.List';
-  Req.Fmethod := 'getinfo';
-  Req.Fversion := 2;
-  Result := HTTPGet<TSynoFSFilesResponse>(Req);
+  Result := HTTPGet<TSynoFSFilesRes>(Req);
 end;
 
 // Start to search files according to given criteria. If more than one criterion
 // is given in different parameters, searched files match all these criteria. (p39)
-function TSyno.FS_SearchStart(Req: TSynoFSStartSearchRequest): TSynoFSStartSearchResponse;
+function TSyno.FS_SearchStart(Req: TSynoFSStartSearchReq): TSynoFSStartSearchRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Search';
-  Req.Fmethod := 'start';
-  Req.Fversion := 2;
-  Result := HTTPGet<TSynoFSStartSearchResponse>(Req);
+  Result := HTTPGet<TSynoFSStartSearchRes>(Req);
 end;
 
 // List matched files in a search temporary database. You can check the
 // finished value in response to know if the search operation is processing
 // or has been finished. (p41)
-function TSyno.FS_SearchList(Req: TSynoFSListSearchRequest): TSynoFSListSearchResponse;
+function TSyno.FS_SearchList(Req: TSynoFSListSearchReq): TSynoFSListSearchRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Search';
-  Req.Fmethod := 'list';
-  Req.Fversion := 2;
-  Result := HTTPGet<TSynoFSListSearchResponse>(Req);
+  Result := HTTPGet<TSynoFSListSearchRes>(Req);
 end;
 
 // Stop the searching task(s). The search temporary database won't be
 // deleted, so it's possible to list the search result using list method
 // after stopping it. (p45)
-function TSyno.FS_SearchStop(Req: TSynoFSStopSearchRequest): TSynoFSStopSearchResponse;
+function TSyno.FS_SearchStop(Req: TSynoFSStopSearchReq): TSynoFSStopSearchRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Search';
-  Req.Fmethod := 'stop';
-  Req.Fversion := 2;
-  Result := HTTPGet<TSynoFSStopSearchResponse>(Req);
+  Result := HTTPGet<TSynoFSStopSearchRes>(Req);
 end;
 
 // Delete search temporary database(s). (p45);
-function TSyno.FS_SearchClean(Req: TSynoFSCleanSearchRequest): TSynoFSCleanSearchResponse;
+function TSyno.FS_SearchClean(Req: TSynoFSCleanSearchReq): TSynoFSCleanSearchRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Search';
-  Req.Fmethod := 'clean';
-  Req.Fversion := 2;
-  Result := HTTPGet<TSynoFSCleanSearchResponse>(Req);
+  Result := HTTPGet<TSynoFSCleanSearchRes>(Req);
 end;
 
 // List all mount point folders of virtual file system, e.g., CIFS or ISO. (p47)
 function TSyno.FS_VirtualList(Req: TSynoFSVirtualListReq): TSynoFSVirtualListRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.VirtualFolder';
-  Req.Fmethod := 'list';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSVirtualListRes>(Req);
 end;
 
 // List user's favorites. (p51)
 function TSyno.FS_FavList(Req: TSynoFSFavListReq): TSynoFSFavListRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Favorite';
-  Req.Fmethod := 'list';
-  Req.Fversion := 1;
   Result := HTTPGet<TSynoFSFavListRes>(Req);
 end;
 
 // Add a folder to user's favorites. (p53)
 function TSyno.FS_FavAdd(Req: TSynoFSFavAddReq): TSynoFSFavAddRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Favorite';
-  Req.Fmethod := 'add';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSFavAddRes>(Req);
 end;
 
 // Delete a favorite in user's favorites. (p54)
 function TSyno.FS_FavDelete(Req: TSynoFSFavDeleteReq): TSynoFSFavDeleteRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Favorite';
-  Req.Fmethod := 'delete';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSFavDeleteRes>(Req);
 end;
 
 // Delete all broken statuses of favorites. (p55)
 function TSyno.FS_FavClean(Req: TSynoFSFavCleanReq): TSynoFSFavCleanRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Favorite';
-  Req.Fmethod := 'clear_broken';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSFavCleanRes>(Req);
 end;
 
 // Edit a favorite name. (p55)
 function TSyno.FS_FavEdit(Req: TSynoFSFavEditReq): TSynoFSFavEditRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Favorite';
-  Req.Fmethod := 'edit';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSFavEditRes>(Req);
 end;
 
 // Replace multiple favorites of folders to the existing user's favorites. (p56)
 function TSyno.FS_FavAll(Req: TSynoFSFavAllReq): TSynoFSFavAllRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Favorite';
-  Req.Fmethod := 'replace_all';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSFavAllRes>(Req);
 end;
 
 // Get a thumbnail of a file. (p57)
 function TSyno.FS_Thumb(Req: TSynoFSThumbReq): TMemoryStream;
 begin
-  Req.Fapi := 'SYNO.FileStation.Thumb';
-  Req.Fmethod := 'get';
-  Req.Fversion := 2;
   Result := HTTPGetStream(Req);
 end;
 
 // Get the accumulated size of files/folders within folder(s). (p59)
 function TSyno.FS_SizeStart(Req: TSynoFSSizeStartReq): TSynoFSSizeStartRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.DirSize';
-  Req.Fmethod := 'start';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSSizeStartRes>(Req);
 end;
 
 // Get the status of the size calculating task. (p60)
 function TSyno.FS_SizeStatus(Req: TSynoFSSizeStatusReq): TSynoFSSizeStatusRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.DirSize';
-  Req.Fmethod := 'status';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSSizeStatusRes>(Req);
 end;
 
 // Stop the size calculation. (p61)
 function TSyno.FS_SizeStop(Req: TSynoFSSizeStopReq): TSynoFSSizeStopRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.DirSize';
-  Req.Fmethod := 'stop';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSSizeStopRes>(Req);
 end;
 
 //  Get MD5 of a file. (p62)
 function TSyno.FS_MD5Start(Req: TSynoFSMD5StartReq): TSynoFSMD5StartRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.MD5';
-  Req.Fmethod := 'start';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSMD5StartRes>(Req);
 end;
 
 // Get the status of the MD5 calculation task. (p63)
 function TSyno.FS_MD5Status(Req: TSynoFSMD5StatusReq): TSynoFSMD5StatusRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.MD5';
-  Req.Fmethod := 'status';
-  Req.Fversion := 1;
   Result := HTTPGet<TSynoFSMD5StatusRes>(Req);
 end;
 
 // Stop calculating the MD5 of a file. (p63)
 function TSyno.FS_MD5Stop(Req: TSynoFSMD5StopReq): TSynoFSMD5StopRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.MD5';
-  Req.Fmethod := 'stop';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSMD5StopRes>(Req);
 end;
 
 // Check if a logged-in user has write permission to create new files/folders in a given folder. (p65)
 function TSyno.FS_PermWrite(Req: TSynoFSPermWriteReq): TSynoFSPermWriteRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.CheckPermission';
-  Req.Fmethod := 'write';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSPermWriteRes>(Req);
 end;
 
@@ -884,216 +810,144 @@ end;
 // Get information of a sharing link by the sharing link ID. (p73)
 function TSyno.FS_ShareInfo(Req: TSynoFSShareInfoReq): TSynoFSShareInfoRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Sharing';
-  Req.Fmethod := 'getinfo';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSShareInfoRes>(Req);
 end;
 
 // List user's file sharing links. (p74)
 function TSyno.FS_ShareList(Req: TSynoFSShareListReq): TSynoFSShareListRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Sharing';
-  Req.Fmethod := 'list';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSShareListRes>(Req);
 end;
 
 // Generate one or more sharing link(s) by file/folder path(s). (p75)
 function TSyno.FS_ShareCreate(Req: TSynoFSShareCreateReq): TSynoFSShareCreateRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Sharing';
-  Req.Fmethod := 'create';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSShareCreateRes>(Req);
 end;
 
 // Delete one or more sharing links. (p77)
 function TSyno.FS_ShareDelete(Req: TSynoFSShareDeleteReq): TSynoFSShareDeleteRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Sharing';
-  Req.Fmethod := 'delete';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSShareDeleteRes>(Req);
 end;
 
 // Remove all expired and broken sharing links. (p77)
 function TSyno.FS_ShareClear(Req: TSynoFSShareCreateReq): TSynoFSShareCreateRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Sharing';
-  Req.Fmethod := 'clear_invalid';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSShareCreateRes>(Req);
 end;
 
 // Edit sharing link(s). (p78)
 function TSyno.FS_ShareEdit(Req: TSynoFSShareEditReq): TSynoFSShareEditRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Sharing';
-  Req.Fmethod := 'edit';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSShareEditRes>(Req);
 end;
 
 // Create folders. (p80)
 function TSyno.FS_FolderCreate(Req: TSynoFSFolderCreateReq): TSynoFSFolderCreateRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.CreateFolder';
-  Req.Fmethod := 'create';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSFolderCreateRes>(Req);
 end;
 
 // Create folders. (p83)
 function TSyno.FS_Rename(Req: TSynoFSRenameReq): TSynoFSRenameRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Rename';
-  Req.Fmethod := 'rename';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSRenameRes>(Req);
 end;
 
 // Start to copy/move files. (p86)
 function TSyno.FS_CopyMoveStart(Req: TSynoFSCopyMoveStartReq): TSynoFSCopyMoveStartRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.CopyMove';
-  Req.Fmethod := 'start';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSCopyMoveStartRes>(Req);
 end;
 
 // Get the copying/moving status. (p87)
 function TSyno.FS_CopyMoveStatus(Req: TSynoFSCopyMoveStatusReq): TSynoFSCopyMoveStatusRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.CopyMove';
-  Req.Fmethod := 'status';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSCopyMoveStatusRes>(Req);
 end;
 
 // Stop a copy/move task. (p88)
 function TSyno.FS_CopyMoveStop(Req: TSynoFSCopyMoveStopReq): TSynoFSCopyMoveStopRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.CopyMove';
-  Req.Fmethod := 'stop';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSCopyMoveStopRes>(Req);
 end;
 
 // Delete file(s)/folder(s). (p90)
 function TSyno.FS_DeleteStart(Req: TSynoFSDeleteStartReq): TSynoFSDeleteStartRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Delete';
-  Req.Fmethod := 'start';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSDeleteStartRes>(Req);
 end;
 
 // Get the deleting status. (p91)
 function TSyno.FS_DeleteStatus(Req: TSynoFSDeleteStatusReq): TSynoFSDeleteStatusRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Delete';
-  Req.Fmethod := 'status';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSDeleteStatusRes>(Req);
 end;
 
 // Stop a delete task. (p92)
 function TSyno.FS_DeleteStop(Req: TSynoFSDeleteStopReq): TSynoFSDeleteStopRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Delete';
-  Req.Fmethod := 'stop';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSDeleteStopRes>(Req);
 end;
 
 // Delete files/folders. This is a blocking method. (p93)
 function TSyno.FS_Delete(Req: TSynoFSDeleteReq): TSynoFSDeleteRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Delete';
-  Req.Fmethod := 'delete';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSDeleteRes>(Req);
 end;
 
 // Start to extract an archive. (p95)
 function TSyno.FS_ExtractStart(Req: TSynoFSExtractStartReq): TSynoFSExtractStartRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Extract';
-  Req.Fmethod := 'start';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSExtractStartRes>(Req);
 end;
 
 // Get the extract task status. (p97)
 function TSyno.FS_ExtractStatus(Req: TSynoFSExtractStatusReq): TSynoFSExtractStatusRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Extract';
-  Req.Fmethod := 'status';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSExtractStatusRes>(Req);
 end;
 
 // Stop the extract task. (p97)
 function TSyno.FS_ExtractStop(Req: TSynoFSExtractStopReq): TSynoFSExtractStopRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Extract';
-  Req.Fmethod := 'stop';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSExtractStopRes>(Req);
 end;
 
 // List archived files contained in an archive. (p98)
 function TSyno.FS_ExtractList(Req: TSynoFSExtractListReq): TSynoFSExtractListRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Extract';
-  Req.Fmethod := 'list';
-  Req.Fversion := 2;
   Result := HTTPGet<TSynoFSExtractListRes>(Req);
 end;
 
 // Start to compress file(s)/folder(s). (p102)
 function TSyno.FS_CompressStart(Req: TSynoFSCompressStartReq): TSynoFSCompressStartRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Compress';
-  Req.Fmethod := 'start';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSCompressStartRes>(Req);
 end;
 
 // Get the compress task status. (p104)
 function TSyno.FS_CompressStatus(Req: TSynoFSCompressStatusReq): TSynoFSCompressStatusRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Compress';
-  Req.Fmethod := 'status';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSCompressStatusRes>(Req);
 end;
 
 // Stop the compress task. (p104)
 function TSyno.FS_CompressStop(Req: TSynoFSCompressStopReq): TSynoFSCompressStopRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.Compress';
-  Req.Fmethod := 'stop';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSCompressStopRes>(Req);
 end;
 
 // List all background tasks including copy, move, delete, compress and extract tasks. (p106)
 function TSyno.FS_BackTaskList(Req: TSynoFSBackTaskListReq): TSynoFSBackTaskListRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.BackgroundTask';
-  Req.Fmethod := 'list';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSBackTaskListRes>(Req);
 end;
 
 // Delete all finished background tasks. (p110)
 function TSyno.FS_BackTaskClear(Req: TSynoFSBackTaskClearReq): TSynoFSBackTaskClearRes;
 begin
-  Req.Fapi := 'SYNO.FileStation.BackgroundTask';
-  Req.Fmethod := 'clear_finished';
-  Req.Fversion := 3;
   Result := HTTPGet<TSynoFSBackTaskClearRes>(Req);
 end;
 

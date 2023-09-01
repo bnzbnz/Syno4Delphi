@@ -18,18 +18,24 @@ type
     Flocal: variant;
     Ffirmware_5Fupgrade: variant;
     Fcache_5Fcheck_5Fshutdown: variant;
+    Constructor Create; overload;
   end;
   TSynoCoreRestartRes = class(TSynoResponse);
 
   // Core_Shutdown
 
-  TSynoCoreShutdownReq = class(TSynoRequest);
+  TSynoCoreShutdownReq = class(TSynoRequest)
+    constructor Create; overload;
+  end;
+
   TSynoCoreShutdownRes = class(TSynoResponse);
 
   // Core_FanSpeed
   // SYNO.Core.Hardware.FanSpeed : get : 1
 
-  TSynoCoreFanSpeedReq = class(TSynoRequest);
+  TSynoCoreFanSpeedReq = class(TSynoRequest)
+    constructor Create; overload;
+  end;
 
   TSynoCoreFanSpeedData = class(TJsonXBaseEx2Type)
     Fall_5Fdisk_5Ftemp_5Ffail: variant;
@@ -46,10 +52,23 @@ type
   // Core_SystemInfo
   // api=SYNO.Core.System : info : 3
 
-  TSynoCore_SystemInfoReq = class(TSynoRequest);
+  TSynoCore_SystemInfoReq = class(TSynoRequest)
+    constructor Create; overload;
+  end;
+
+  TSynoCore_usb_dev = class(TJsonXBaseEx2Type)
+    Fcls: variant;
+    Fpid: variant;
+    Fproducer: variant;
+    Fproduct: variant;
+    Frev: variant;
+    Fvid: variant;
+  end;
+
+  TSynoCore_sata_dev = TSynoCore_usb_dev; // ?? Temporary
 
   TSynoCore_external_pci_slot_info = class(TJsonXBaseEx2Type)
-    Fcardname: variant;
+    FcardName: variant;
     FOccupied: variant;
     FRecognized: variant;
     Fslot: variant;
@@ -69,7 +88,7 @@ type
     Fmodel: variant;
     Fntp_5Fserver: variant;
     Fram_5Fsize: variant;
-    [AJsonXClassType(TSynoUnknown)]
+    [AJsonXClassType(TSynoCore_sata_dev)]
     Fsata_5Fdev: TJSonXObjListType;
     Fserial: variant;
     Fsupport_5Fesata: variant;
@@ -81,6 +100,8 @@ type
     Ftime_5Fzone: variant;
     Ftime_5Fzone_5Fdesc: variant;
     Fup_5Ftime: variant;
+    [AJsonXClassType(TSynoCore_usb_dev)]
+    Fusb_5Fdev: TJSonXObjListType;
   end;
 
   TSynoCore_SystemInfoRes = class(TSynoResponse)
@@ -93,6 +114,7 @@ type
     Foffset: variant;
     Flocation: variant;
     Foption: variant;
+    constructor Create; overload;
   end;
 
   TCore_Storage_Volume = class(TJsonXBaseEx2Type)
@@ -131,9 +153,8 @@ type
     Fdata: TCore_Storage_Volume_List_Data;
   end;
 
-
-  // SPECIAL : Multi Call, see
-  // SYNO.Entry.Request : request : 1
+  // MULTIPLEXED REQUEST :
+  // see: SYNO.Entry.Request : request : 1
 
   TSynoCore_EntryRequestReq = class(TSynoRequest)
   public
@@ -148,16 +169,17 @@ type
     Fversion: variant;
     Fsuccess: variant;
     function NS: string;
+    constructor Create; overload;
   end;
 
-  TSynoCore_EntryRequestData = class(TJsonXBaseEx2Type)
+  TSynoCore_EntryData = class(TJsonXBaseEx2Type)
     Fhas_5Ffail: variant;
     [AJsonXClassType(TSynoCore_Response_Element)]
     Fresult : TJsonXObjListType;
   end;
 
   TSynoCore_EntryRequestRes = class(TSynoRequest)
-    Fdata: TSynoCore_EntryRequestData;
+    Fdata: TSynoCore_EntryData;
   end;
 
 implementation
@@ -178,11 +200,69 @@ begin
   Result := Self.QueryString(True) + '&compound=' + Query;
 end;
 
-{ TSynoCore_EntryRequest_Element }
-
 function TSynoCore_Response_Element.NS: string;
 begin
   Result := Fapi + ':' + Fmethod + ':' + varToStr(Fversion);
+end;
+
+{ TSynoCoreRestartReq }
+
+constructor TSynoCoreRestartReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.Core.System';
+  Fmethod := 'reboot';
+  Fversion := 2;
+end;
+
+{ TSynoCoreShutdownReq }
+
+constructor TSynoCoreShutdownReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.Core.System';
+  Fmethod := 'shutdown';
+  Fversion := 2;
+end;
+
+{ TSynoCoreFanSpeedReq }
+
+constructor TSynoCoreFanSpeedReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.Core.Hardware.FanSpeed';
+  Fmethod := 'get';
+  Fversion := 1;
+end;
+
+{ TCore_Storage_Volume_List_Req }
+
+constructor TCore_Storage_Volume_List_Req.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.Core.Storage.Volume';
+  Fmethod := 'list';
+  Fversion := 1;
+end;
+
+{ TSynoCore_SystemInfoReq }
+
+constructor TSynoCore_SystemInfoReq.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.Core.System';
+  Fmethod := 'info';
+  Fversion := 3;
+end;
+
+{ TSynoCore_EntryRequest_Element }
+
+constructor TSynoCore_Response_Element.Create;
+begin
+  Inherited;
+  Fapi := 'SYNO.Entry.Request';
+  Fmethod := 'request';
+  Fversion := 1;
 end;
 
 end.
