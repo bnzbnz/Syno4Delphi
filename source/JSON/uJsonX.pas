@@ -1,14 +1,10 @@
 unit uJsonX;
-{ ******************************************************* }
-{                                                         }
-{             eBay RESTful API for Delphi                 }
-{                                                         }
-{     Copyright(c) 2021- 2023 - EA4D / Laurent Meyer.     }
-{               All rights reserved                       }
-{                                                         }
-{             Contact: support@ea4d.com                   }
-{                                                         }
-{ ******************************************************* }
+
+///
+/// Syno4Delphi : https://github.com/bnzbnz/Syno4Delphi
+/// Laurent Meyer : lmeyer@ea4d.com
+/// License: MPL 1.1 / GPL 2.1
+///
 
 interface
 
@@ -437,7 +433,7 @@ begin
           else
           begin
             BreakPoint
-              (Format('The Property " F%s " must be a variant or an object in class : %s',
+              (Format('The Property " F%s " must be a variant or an object of class : %s',
               [PropertyNameEncode(JName), aObj.ClassName]));
           end;
         end;

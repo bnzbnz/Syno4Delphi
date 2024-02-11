@@ -20,7 +20,10 @@ type
     Fcache_5Fcheck_5Fshutdown: variant;
     Constructor Create; overload;
   end;
-  TSynoCoreRestartRes = class(TSynoResponse);
+
+  TSynoCoreRestartRes = class(TSynoResponse)
+    Fdata: TSynoUnknown;
+  end;
 
   // Core_Shutdown
 
@@ -28,7 +31,9 @@ type
     constructor Create; overload;
   end;
 
-  TSynoCoreShutdownRes = class(TSynoResponse);
+  TSynoCoreShutdownRes = class(TSynoResponse)
+    Fdata: TSynoUnknown;
+  end;
 
   // Core_FanSpeed
   // SYNO.Core.Hardware.FanSpeed : get : 1

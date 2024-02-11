@@ -83,16 +83,37 @@ type
     Fadditional: TSynoFS_virtual_folder_additional;
   end;
 
+  TSynoFS_sharing_link_app = class(TJsonXBaseEx2Type)
+    Fenable_5Fupload: variant;
+    Fis_5Ffolder: variant;
+    Frequest_5Finfo: variant;
+    Frequest_5Fname: variant;
+  end;
+
   TSynoFS_sharing_link = class(TJsonXBaseEx2Type)
-    Fdate_available: variant;
-    Fdate_expired: variant;
-    Fhas_password: variant;
+    Fapp: TSynoFS_sharing_link_app;
+    Fdate_5Favailable: variant;
+    Fdate_5Fexpired: variant;
+    Fenable_5Fupload: variant;
+    Fexpire_5Ftimes: variant;
+    Fhas_5Fpassword: variant;
     Fid: variant;
     FisFolder: variant;
-    Flink_owner: variant;
+    Flimit_5Fsize: variant;
+    Flink_5Fowner: variant;
     Fname: variant;
     Fpath: variant;
+    Fproject_5Fname: variant;
+    [AJsonXClassType(TSynoUnknown)]
+    Fprotect_5Fgroups: TJsonXObjListType;
+    Fprotect_5Ftype: variant;
+    [AJsonXClassType(TSynoUnknown)]
+    Fprotect_5Fusers: TJsonXObjListType;
+    Fqrcode: variant;
+    Frequest_5Finfo: variant;
+    Frequest_5Fname: variant;
     Fstatus: variant;
+    Fuid: variant;
     Furl: variant;
   end;
 
@@ -748,7 +769,7 @@ type
 //==>> Upload a file.
 
     // upload
-    // Upload a file by RFC 1867, http://tools.ietf.org/html/rfc1867.
+    // Upload& a file by RFC 1867, http://tools.ietf.org/html/rfc1867.
     // Note that each parameter is passed within each part but binary file data
     // must be the last part.
     // (p67)
@@ -864,6 +885,8 @@ type
     TSynoFS_shared_link_app = class(TJsonXBaseEx2Type)
       Fenable_5Fupload: variant;
       Fis_5Ffolder: variant;
+      Frequest_5Finfo: variant;
+      Frequest_5Fname: variant;
     end;
 
     TSynoFS_shared_link = class(TJsonXBaseEx2Type)
@@ -1096,7 +1119,7 @@ type
     end;
 
     TSynoFSDeleteStartData = class(TJsonXBaseEx2Type)
-      taskid: variant;
+      Ftaskid: variant;
     end;
 
     TSynoFSDeleteStartRes = class(TSynoResponse)
@@ -1122,6 +1145,11 @@ type
       Fprocessing_path: variant;
       Ffinished: variant;
       Fprogress: variant;
+      Fhas_5Fdir: variant;
+      Ffound_5Ffile_5Fsize: variant;
+      Ffound_5Ffile_5Fnum: variant;
+      Ffound_5Fdir_5Fsize: variant;
+      Ffound_5Fdir_5Fnum :variant;
     end;
 
     TSynoFSDeleteStatusRes = class(TSynoResponse)
@@ -1653,6 +1681,7 @@ end;
 constructor TSynoFSUploadFileReq.Create;
 begin
   Inherited;
+  // Processed intenally
 end;
 
 { TSynoFSDownloadFilesRes }
@@ -1660,6 +1689,7 @@ end;
 constructor TSynoFSDownloadFilesRes.Create;
 begin
   Inherited;
+   // Processed intenally
 end;
 
 { TSynoFSShareInfoReq }

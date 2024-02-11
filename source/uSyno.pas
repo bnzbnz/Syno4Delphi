@@ -1,5 +1,6 @@
 unit uSyno;
 
+///
 /// Syno4Delphi : https://github.com/bnzbnz/Syno4Delphi
 /// Laurent Meyer : lmeyer@ea4d.com
 /// License: MPL 1.1 / GPL 2.1
@@ -54,10 +55,10 @@ type
     {$REGION  'Auth Impl.'}
       // https://global.synologydownload.com/download/Document/Software/DeveloperGuide/Os/DSM/All/enu/DSM_Login_Web_API_Guide_enu.pdf
 
-      function Auth_APIQuery(Req: TSynoAuthAPIQueryReq): TSynoAuthAPIQueryRes; // (p13)
-      function Auth_Login(Req: TSynoAuthLoginReq): TSynoAuthLoginRes; overload; // (p15)
+      function Auth_APIQuery(Req: TSynoAPIQueryReq): TSynoAPIQueryRes; // (p13)
+      function Auth_Login(Req: TSynoAPILoginReq): TSynoAPILoginRes; overload; // (p15)
       function Auth_Login: Boolean; overload;
-      function Auth_Logout(Req: TSynoAuthLogoutReq): TSynoAuthLogoutRes; overload; // (p17)
+      function Auth_Logout(Req: TSynoAPILogoutReq): TSynoAPILogoutRes; overload; // (p17)
       function Auth_Logout: Boolean; overload;
       function Auth_Token(Req: TSynoAuthTokenReq): TSynoAuthTokenRes; overload; // (p17)
       function Auth_Token: TSynoAuthTokenRes; overload;
@@ -409,21 +410,21 @@ end;
 
 {$REGION 'Auth'}
 
-function TSyno.Auth_APIQuery(Req: TSynoAuthAPIQueryReq): TSynoAuthAPIQueryRes;
+function TSyno.Auth_APIQuery(Req: TSynoAPIQueryReq): TSynoAPIQueryRes;
 begin
-  Result := HTTPGet<TSynoAuthAPIQueryRes>(Req);
+  Result := HTTPGet<TSynoAPIQueryRes>(Req);
 end;
 
-function TSyno.Auth_Login(Req: TSynoAuthLoginReq): TSynoAuthLoginRes;
+function TSyno.Auth_Login(Req: TSynoAPILoginReq): TSynoAPILoginRes;
 begin
-  Result := HTTPGet<TSynoAuthLoginRes>(Req);
+  Result := HTTPGet<TSynoAPILoginRes>(Req);
 end;
 
 function TSyno.Auth_Login: Boolean;
 begin
   Result := False;
-  var Req := TSynoAuthLoginReq.Create;
-  var Res: TSynoAuthLoginRes := nil;
+  var Req := TSynoAPILoginReq.Create;
+  var Res: TSynoAPILoginRes := nil;
   try
     Req.Faccount := FUsername;
     Req.Fpasswd :=  FPassword;
@@ -441,16 +442,16 @@ begin
   end;
 end;
 
-function TSyno.Auth_Logout(Req: TSynoAuthLogoutReq): TSynoAuthLogoutRes;
+function TSyno.Auth_Logout(Req: TSynoAPILogoutReq): TSynoAPILogoutRes;
 begin
-  Result := HTTPGet<TSynoAuthLogoutRes>(Req);
+  Result := HTTPGet<TSynoAPILogoutRes>(Req);
 end;
 
 function TSyno.Auth_Logout: Boolean;
 begin
   Result := False;
-  var Req := TSynoAuthLogoutReq.Create;
-  var Res: TSynoAuthLogoutRes := nil;
+  var Req := TSynoAPILogoutReq.Create;
+  var Res: TSynoAPILogoutRes := nil;
   try
     Res :=  Auth_Logout(Req);
     if Res = nil then Exit;
@@ -721,7 +722,6 @@ end;
 
 // Upload a file. (p67)
 function TSyno.FS_UploadFile(Filename: string; Req: TSynoFSUploadFileReq; Stream: TStream): TSynoFSUploadFileRes;
-
 const
   CRLF = #$D#$A;
 
@@ -766,11 +766,11 @@ begin
     ReqMS.WriteRawAnsiString(AnsiString(CRLF + '--' + Boundary  + '--' + CRLF));
     FHTTP.CustomHeaders['Content-Type'] := 'multipart/form-data; boundary=' + Boundary;
     ReqMS.Position := 0;
-    FLastReq := ReqMS.ReadRawString(TEncoding.UTF8);
+    //FLastReq := ReqMS.ReadRawString(TEncoding.UTF8);
     var HTTPRes : IHTTPResponse := nil;
     try HTTPRes := FHTTP.Post(Url, ReqMS, ResMS); except end;
     FLastErr := HTTPRes.StatusCode;
-    FLastRes := HTTPRes.ContentAsString(TEncoding.UTF8) ;
+    //FLastRes := HTTPRes.ContentAsString(TEncoding.UTF8) ;
     Result := TSynoFSUploadFileRes.Create;
     TJsonX.parser(Result, FLastRes);
   finally

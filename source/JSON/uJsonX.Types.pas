@@ -1,17 +1,11 @@
-{*******************************************************}
-{                                                       }
-{             eBay RESTful API for Delphi               }
-{                                                       }
-{    Copyright(c) 2021- 2023 - EA4D / Laurent Meyer.    }
-{                  All rights reserved                  }
-{                                                       }
-{               Contact: support@ea4d.com               }
-{                                                       }
-{*******************************************************}
-
 {$A8,B-,C+,E-,F-,G+,H+,I+,J-,K-,M-,N-,O+,P+,Q-,R-,S-,T-,U-,V+,W-,X+,Z1}
-
 unit uJsonX.Types;
+
+///
+/// Syno4Delphi : https://github.com/bnzbnz/Syno4Delphi
+/// Laurent Meyer : lmeyer@ea4d.com
+/// License: MPL 1.1 / GPL 2.1
+///
 
 interface
 uses  System.Generics.Collections, Classes;

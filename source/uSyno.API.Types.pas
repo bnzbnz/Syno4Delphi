@@ -14,12 +14,12 @@ type
 
   // API List (query)
 
-  TSynoAuthAPIQueryReq = class(TSynoRequest)
+  TSynoAPIQueryReq = class(TSynoRequest)
     Fquery: variant;
     constructor Create; overload;
   end;
 
-  TSynoAuthAPIQueryData = class(TJsonXBaseEx2Type)
+  TSynoAPIQueryData = class(TJsonXBaseEx2Type)
     Fkey: variant;
     Fpath: variant;
     FminVersion: variant;
@@ -27,20 +27,14 @@ type
     FrequestFormat: variant;
   end;
 
-  TSynoAuthAPIQueryRes = class(TSynoResponse)
-    [AJsonXClassType(TSynoAuthAPIQueryData)]
+  TSynoAPIQueryRes = class(TSynoResponse)
+    [AJsonXClassType(TSynoAPIQueryData)]
     Fdata: TJsonXVarObjDicType;
   end;
 
   // Connect (login)
 
-  TSynoAuthLoginData = class(TJsonXBaseEx2Type)
-    Fsid: variant;
-    Fdid: variant;
-    Fsynotoken: variant;
-  end;
-
-  TSynoAuthLoginReq = class(TSynoRequest)
+  TSynoAPILoginReq = class(TSynoRequest)
     Faccount: variant;
     Fpasswd: variant;
     Fsession: variant;
@@ -53,17 +47,23 @@ type
     constructor Create; overload;
   end;
 
-  TSynoAuthLoginRes = class(TSynoResponse)
-    Fdata: TSynoAuthLoginData;
+  TSynoAPILoginData = class(TJsonXBaseEx2Type)
+    Fsid: variant;
+    Fdid: variant;
+    Fsynotoken: variant;
+  end;
+
+  TSynoAPILoginRes = class(TSynoResponse)
+    Fdata: TSynoAPILoginData;
   end;
 
   // Disconnect (logout)
 
-  TSynoAuthLogoutReq = class(TSynoRequest)
+  TSynoAPILogoutReq = class(TSynoRequest)
     constructor Create; overload;
   end;
 
-  TSynoAuthLogoutRes = class(TSynoResponse);
+  TSynoAPILogoutRes = class(TSynoResponse);
 
   // Token
 
@@ -83,7 +83,7 @@ implementation
 
 { TSynoAuthAPIQueryReq }
 
-constructor TSynoAuthAPIQueryReq.Create;
+constructor TSynoAPIQueryReq.Create;
 begin
   Fapi := 'SYNO.API.Auth';
   Fmethod := 'query';
@@ -92,7 +92,7 @@ end;
 
 { TSynoAuthLoginReq }
 
-constructor TSynoAuthLoginReq.Create;
+constructor TSynoAPILoginReq.Create;
 begin
   Inherited;
   Fapi := 'SYNO.API.Auth';
@@ -102,7 +102,7 @@ end;
 
 { TSynoAuthLogoutReq }
 
-constructor TSynoAuthLogoutReq.Create;
+constructor TSynoAPILogoutReq.Create;
 begin
   Inherited;
   Fapi := 'SYNO.API.Auth';
